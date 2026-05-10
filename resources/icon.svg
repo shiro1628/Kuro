@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f0a500" stop-opacity="1"/>
+      <stop offset="70%" stop-color="#c87800" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#7a4800" stop-opacity="1"/>
+    </radialGradient>
+    <radialGradient id="bgGlow" cx="50%" cy="55%" r="50%">
+      <stop offset="0%" stop-color="#1a1208"/>
+      <stop offset="100%" stop-color="#080808"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="90" fill="url(#bgGlow)"/>
+
+  <!-- Left ear (outer) -->
+  <polygon points="100,260 148,82 238,192" fill="#0e0e0e"/>
+  <!-- Right ear (outer) -->
+  <polygon points="412,260 364,82 274,192" fill="#0e0e0e"/>
+
+  <!-- Left ear (inner) -->
+  <polygon points="126,242 160,112 224,196" fill="#1f0a0a" opacity="0.6"/>
+  <!-- Right ear (inner) -->
+  <polygon points="386,242 352,112 288,196" fill="#1f0a0a" opacity="0.6"/>
+
+  <!-- Cat head -->
+  <ellipse cx="256" cy="310" rx="162" ry="152" fill="#111111"/>
+
+  <!-- Left eye glow halo -->
+  <ellipse cx="194" cy="292" rx="42" ry="50" fill="#f0a500" opacity="0.18" filter="url(#glow)"/>
+  <!-- Right eye glow halo -->
+  <ellipse cx="318" cy="292" rx="42" ry="50" fill="#f0a500" opacity="0.18" filter="url(#glow)"/>
+
+  <!-- Left eye -->
+  <ellipse cx="194" cy="292" rx="34" ry="42" fill="url(#eyeGlow)"/>
+  <ellipse cx="194" cy="292" rx="14" ry="38" fill="#080808"/>
+  <!-- Left eye highlight -->
+  <ellipse cx="182" cy="278" rx="6" ry="8" fill="#fff" opacity="0.5"/>
+
+  <!-- Right eye -->
+  <ellipse cx="318" cy="292" rx="34" ry="42" fill="url(#eyeGlow)"/>
+  <ellipse cx="318" cy="292" rx="14" ry="38" fill="#080808"/>
+  <!-- Right eye highlight -->
+  <ellipse cx="306" cy="278" rx="6" ry="8" fill="#fff" opacity="0.5"/>
+
+  <!-- Nose -->
+  <path d="M248 358 Q256 368 264 358 Q256 352 248 358Z" fill="#c05060"/>
+
+  <!-- Mouth -->
+  <path d="M256 368 Q238 384 228 378" stroke="#c05060" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M256 368 Q274 384 284 378" stroke="#c05060" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Left whiskers -->
+  <line x1="88" y1="358" x2="222" y2="368" stroke="#2a2a2a" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="92" y1="378" x2="222" y2="378" stroke="#2a2a2a" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="96" y1="398" x2="222" y2="390" stroke="#2a2a2a" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Right whiskers -->
+  <line x1="424" y1="358" x2="290" y2="368" stroke="#2a2a2a" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="420" y1="378" x2="290" y2="378" stroke="#2a2a2a" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="416" y1="398" x2="290" y2="390" stroke="#2a2a2a" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

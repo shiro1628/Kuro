@@ -1,0 +1,57 @@
+{
+  "name": "kuro-cursor",
+  "displayName": "Kuro",
+  "description": "Send errors and code snippets to Kuro (Claude + Gemini workspace)",
+  "version": "0.1.0",
+  "publisher": "findthegap",
+  "repository": { "type": "git", "url": "https://github.com/findthegap/kuro" },
+  "license": "MIT",
+  "engines": { "vscode": "^1.80.0" },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "kuro.fixWithKuro",
+        "title": "Fix with Kuro"
+      },
+      {
+        "command": "kuro.sendSnippet",
+        "title": "Kuro: 선택한 코드 전송"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "kuro.fixWithKuro",
+        "key": "ctrl+alt+k",
+        "when": "editorFocus"
+      }
+    ],
+    "configuration": {
+      "title": "Kuro",
+      "properties": {
+        "kuro.port": {
+          "type": "number",
+          "default": 7890,
+          "description": "Kuro 앱 HTTP 서버 포트"
+        },
+        "kuro.contextLines": {
+          "type": "number",
+          "default": 20,
+          "description": "에러 주변 코드 전송 범위 (위아래 줄 수)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -watch -p tsconfig.json",
+    "package": "npx @vscode/vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.4.0"
+  }
+}

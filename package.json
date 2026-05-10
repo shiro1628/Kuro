@@ -1,0 +1,69 @@
+{
+  "name": "kuro",
+  "version": "0.1.0",
+  "description": "AI-driven dev workspace — Claude coder + Gemini reviewer/researcher",
+  "main": "out/main/index.js",
+  "scripts": {
+    "gen-icon": "node scripts/gen-icon.js",
+    "dev": "node scripts/gen-icon.js && electron-vite dev",
+    "build": "node scripts/gen-icon.js && electron-vite build",
+    "package": "node scripts/gen-icon.js && electron-vite build && electron-builder --win",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/addon-web-links": "^0.11.0",
+    "@xterm/xterm": "^5.5.0",
+    "node-pty": "^1.0.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.19",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "postcss": "^8.4.38",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.33.5",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.3.0"
+  },
+  "build": {
+    "appId": "kr.findthegap.kuro",
+    "productName": "Kuro",
+    "directories": {
+      "output": "dist"
+    },
+    "icon": "resources/icon.ico",
+    "win": {
+      "icon": "resources/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "files": [
+      "out/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "scripts",
+        "to": "scripts"
+      }
+    ]
+  }
+}

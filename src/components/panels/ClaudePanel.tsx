@@ -15,7 +15,7 @@ export default function ClaudePanel() {
   const { project, setClaudeRunning, log } = useAppStore()
   const claudeRunning = useAppStore(s => s.claudeRunning)
   const autoSnippet = useAppStore(s => s.autoSnippet)
-  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null)
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; selection: string } | null>(null)
   const autoSnippetRef = useRef(autoSnippet)
   autoSnippetRef.current = autoSnippet  // 클로저 갱신 없이 최신값 참조
 
@@ -66,8 +66,9 @@ export default function ClaudePanel() {
       if (error) parts.push(`에러:\n${error.trim()}`)
       parts.push('위 에러를 수정해줘')
 
-      const msg = parts.join('\n') + '\r'
-      window.kuro.ptyWrite('claude', msg.replace(/\n/g, '\r\n'))
+      // Bracketed paste로 감싸면 중간 \r이 Enter로 해석되지 않음
+      const msg = parts.join('\n')
+      window.kuro.ptyWrite('claude', `\x1b[200~${msg}\x1b[201~\r`)
       log('success', `Cursor에서 에러 수신${file ? ` — ${file}${lines ? ':' + lines : ''}` : ''}`)
 
       // 포커스를 Kuro로 가져옴
@@ -154,12 +155,17 @@ export default function ClaudePanel() {
           ref={containerRef}
           className="xterm-container"
           onClick={() => termRef.current?.focus()}
-          onContextMenu={e => { e.preventDefault(); setCtxMenu({ x: e.clientX, y: e.clientY }) }}
+          onContextMenu={e => {
+            e.preventDefault()
+            const sel = termRef.current?.getSelection() ?? ''
+            setCtxMenu({ x: e.clientX, y: e.clientY, selection: sel })
+          }}
         />
         {ctxMenu && termRef.current && (
           <TermContextMenu
             x={ctxMenu.x} y={ctxMenu.y}
             term={termRef.current} ptyId="claude"
+            selection={ctxMenu.selection}
             onClose={() => setCtxMenu(null)}
           />
         )}

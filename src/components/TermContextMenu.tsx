@@ -7,10 +7,11 @@ interface Props {
   y: number
   term: Terminal
   ptyId: string
+  selection: string   // 우클릭 시점에 캡처한 선택 텍스트
   onClose: () => void
 }
 
-export default function TermContextMenu({ x, y, term, ptyId, onClose }: Props) {
+export default function TermContextMenu({ x, y, term, ptyId, selection, onClose }: Props) {
   const menuRef = useRef<HTMLDivElement>(null)
   const setPendingGeminiInput = useAppStore(s => s.setPendingGeminiInput)
 
@@ -37,8 +38,7 @@ export default function TermContextMenu({ x, y, term, ptyId, onClose }: Props) {
   const top  = y + menuH > vh ? vh - menuH - 4 : y
 
   const copy = async () => {
-    const sel = term.getSelection()
-    if (sel) await window.kuro.clipboardWrite(sel)
+    if (selection) await window.kuro.clipboardWrite(selection)
     onClose()
   }
 
@@ -61,20 +61,20 @@ export default function TermContextMenu({ x, y, term, ptyId, onClose }: Props) {
   }
 
   const sendToClaude = () => {
-    const sel = term.getSelection()
-    if (!sel) return
-    window.kuro.ptyWrite('claude', sel)
+    if (!selection) return
+    // Bracketed paste로 감싸면 중간 \r이 Enter로 해석되지 않음
+    const text = selection.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd()
+    window.kuro.ptyWrite('claude', `\x1b[200~${text}\x1b[201~\r`)
     onClose()
   }
 
   const sendToGemini = () => {
-    const sel = term.getSelection()
-    if (!sel) return
-    setPendingGeminiInput(sel)
+    if (!selection) return
+    setPendingGeminiInput(selection)
     onClose()
   }
 
-  const hasSel = !!term.getSelection()
+  const hasSel = !!selection
 
   return (
     <div

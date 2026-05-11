@@ -30,7 +30,7 @@ function TerminalPane({ tab, active, projectPath, autoCommand }: TermProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const termRef = useRef<Terminal | null>(null)
   const fitRef = useRef<FitAddon | null>(null)
-  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null)
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; selection: string } | null>(null)
   const { log } = useAppStore()
 
   // init terminal & PTY once on mount
@@ -117,12 +117,17 @@ function TerminalPane({ tab, active, projectPath, autoCommand }: TermProps) {
         className="xterm-container"
         style={{ display: active ? 'block' : 'none' }}
         onClick={() => termRef.current?.focus()}
-        onContextMenu={e => { e.preventDefault(); setCtxMenu({ x: e.clientX, y: e.clientY }) }}
+        onContextMenu={e => {
+          e.preventDefault()
+          const sel = termRef.current?.getSelection() ?? ''
+          setCtxMenu({ x: e.clientX, y: e.clientY, selection: sel })
+        }}
       />
       {ctxMenu && termRef.current && active && (
         <TermContextMenu
           x={ctxMenu.x} y={ctxMenu.y}
           term={termRef.current} ptyId={tab.ptyId}
+          selection={ctxMenu.selection}
           onClose={() => setCtxMenu(null)}
         />
       )}

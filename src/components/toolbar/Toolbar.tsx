@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/useAppStore'
 import KuroCat, { PawIcon } from '../KuroCat'
 
 export default function Toolbar() {
-  const { project, claudeRunning, devServerRunning, devServerCommand, autoSnippet, clearProject, toggleAutoSnippet, log } = useAppStore()
+  const { project, claudeRunning, devServerRunning, devServerCommand, autoSnippet, clearProject, toggleAutoSnippet, log, restartClaude } = useAppStore()
   const [serverPort, setServerPort] = useState<number | null>(null)
   const [browserRunning, setBrowserRunning] = useState(false)
   const [browserPort, setBrowserPort] = useState<number | null>(null)
@@ -59,18 +59,20 @@ export default function Toolbar() {
     } else {
       const url = devServerCommand ? 'http://localhost:3000' : 'about:blank'
       const result = await window.kuro.browserLaunch({ projectPath: project.path, url })
-      if (!result.success) log('error', `브라우저 실행 실패: ${result.error}`)
+      if (!result.success) { log('error', `브라우저 실행 실패: ${result.error}`); return }
     }
+    // 브라우저 시작 후 MCP 설정이 업데이트됐으므로 Claude 재시작 필요
+    log('warn', '공유 브라우저 연결됨 — Claude를 재시작해야 Playwright MCP가 이 브라우저를 사용합니다 (↺ 버튼)')
   }
 
-  const handleCompact = () => {
-    window.kuro.ptyWrite('claude', '/compact\r')
-    log('info', '/compact 전송 → Claude 컨텍스트 압축 요청')
+  const handleRestartClaude = () => {
+    restartClaude()
+    log('info', 'Claude 재시작 중 — Playwright MCP가 공유 브라우저에 연결됩니다')
   }
 
-  return (
+return (
     <div className="titlebar-drag flex items-center gap-2 px-3 h-11 bg-surface-1 border-b border-surface-border flex-shrink-0"
-      style={{ borderBottomColor: '#1a1a1a' }}>
+      style={{ borderBottomColor: '#1a1a1a', paddingRight: '150px' }}>
 
       {/* Logo */}
       <div className="titlebar-nodrag flex items-center gap-2 mr-1 select-none">
@@ -119,30 +121,27 @@ export default function Toolbar() {
         </span>
       )}
 
+      {/* 버튼 그룹 — 패딩 통일 px-1.5 py-0.5 */}
       {/* Auto-snippet toggle */}
       <button
         onClick={toggleAutoSnippet}
-        className={`titlebar-nodrag flex items-center gap-1.5 px-2 py-1 text-xs rounded border transition-all duration-150 ${
-          autoSnippet
-            ? 'text-accent border-accent/40 bg-accent/8'
-            : 'text-gray-600 border-surface-border hover:text-gray-400'
+        className={`titlebar-nodrag flex items-center gap-1 px-1.5 py-0.5 text-xs rounded border transition-all duration-150 ${
+          autoSnippet ? 'text-accent border-accent/40 bg-accent/8' : 'text-gray-600 border-surface-border hover:text-gray-400'
         }`}
         title={autoSnippet ? '자동 snippet 래핑 켜짐' : '자동 snippet 래핑 꺼짐'}
       >
-        <PawIcon size={11} />
-        스니펫
+        <PawIcon size={10} />
+        snip
       </button>
 
       {/* Open in Cursor */}
       <button
         onClick={() => project && window.kuro.cursorOpen({ projectPath: project.path })}
         disabled={!project}
-        className={`titlebar-nodrag flex items-center gap-1.5 px-2 py-1 text-xs rounded border transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed ${
-          cursorOpen
-            ? 'text-accent border-accent/40 bg-accent/8'
-            : 'text-gray-600 border-surface-border hover:text-gray-300 hover:border-gray-500'
+        className={`titlebar-nodrag flex items-center gap-1 px-1.5 py-0.5 text-xs rounded border transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed ${
+          cursorOpen ? 'text-accent border-accent/40 bg-accent/8' : 'text-gray-600 border-surface-border hover:text-gray-300 hover:border-gray-500'
         }`}
-        title={cursorOpen ? 'Cursor 실행 중 — 클릭하면 프로젝트 다시 열기' : 'Cursor에서 프로젝트 열기'}
+        title={cursorOpen ? 'Cursor 실행 중' : 'Cursor에서 열기'}
       >
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="16 18 22 12 16 6"/>
@@ -154,46 +153,34 @@ export default function Toolbar() {
       {/* Shared browser */}
       <button
         onClick={handleBrowserToggle}
-        className={`titlebar-nodrag flex items-center gap-1.5 px-2 py-1 text-xs rounded border transition-all duration-150 ${
-          browserRunning
-            ? 'text-accent border-accent/40 bg-accent/8'
-            : 'text-gray-600 border-surface-border hover:text-gray-400'
+        className={`titlebar-nodrag flex items-center gap-1 px-1.5 py-0.5 text-xs rounded border transition-all duration-150 ${
+          browserRunning ? 'text-accent border-accent/40 bg-accent/8' : 'text-gray-600 border-surface-border hover:text-gray-400'
         }`}
-        title={browserRunning
-          ? `공유 브라우저 실행 중 — CDP :${browserPort}\nPlaywright MCP가 이 브라우저를 제어합니다\n클릭하면 종료`
-          : '공유 브라우저 시작 — Claude와 사용자가 같은 브라우저 공유'}
+        title={browserRunning ? `공유 브라우저 실행 중 — CDP :${browserPort}\n클릭하면 종료` : '공유 브라우저 시작 (CDP)'}
       >
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10"/>
           <line x1="2" y1="12" x2="22" y2="12"/>
           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
         </svg>
-        {browserRunning ? `브라우저 ●` : '브라우저'}
+        {browserRunning ? '브라우저 ●' : '브라우저'}
       </button>
 
-      {/* /compact */}
+      {/* Claude 재시작 */}
       <button
-        onClick={handleCompact}
-        disabled={!claudeRunning}
-        className="titlebar-nodrag flex items-center gap-1.5 px-2 py-1 text-xs rounded border border-surface-border text-gray-600 hover:text-accent hover:border-accent/40 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed"
-        title="컨텍스트 압축 (/compact)"
+        onClick={handleRestartClaude}
+        disabled={!project}
+        className="titlebar-nodrag px-1.5 py-0.5 text-xs rounded border border-surface-border text-gray-600 hover:text-orange-400 hover:border-orange-400/40 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed"
+        title="Claude 재시작 — 브라우저 공유 후 MCP 적용"
       >
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
-        compact
+        ↺ Claude
       </button>
 
-      {/* Status */}
-      <div className="titlebar-nodrag flex items-center gap-3 ml-1">
-        <span className="flex items-center gap-1.5 text-xs text-gray-600">
-          <span className={`status-dot ${claudeRunning ? 'running' : 'idle'}`} />
-          Claude
-        </span>
-        <span className="flex items-center gap-1.5 text-xs text-gray-600">
-          <span className={`status-dot ${devServerRunning ? 'running' : 'idle'}`} />
-          Dev
-        </span>
+
+{/* Status — 텍스트 제거하고 점만 */}
+      <div className="titlebar-nodrag flex items-center gap-2 ml-1" title={`Claude: ${claudeRunning ? '실행 중' : '대기'} / Dev: ${devServerRunning ? '실행 중' : '대기'}`}>
+        <span className={`status-dot ${claudeRunning ? 'running' : 'idle'}`} />
+        <span className={`status-dot ${devServerRunning ? 'running' : 'idle'}`} />
       </div>
     </div>
   )

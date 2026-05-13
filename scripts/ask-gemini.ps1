@@ -1,8 +1,15 @@
 # Kuro - Gemini CLI wrapper
-# Reads JSON payload from stdin: { mode: "review"|"research", input: string, context?: string }
-# Calls gemini CLI and streams output to stdout
+# Reads JSON payload from -PayloadFile (temp file) to avoid stdin encoding issues with large input
+param(
+  [string]$PayloadFile
+)
 
-$raw = [Console]::In.ReadToEnd()
+if (-not $PayloadFile -or -not (Test-Path $PayloadFile)) {
+  Write-Error "PayloadFile 없음: $PayloadFile"
+  exit 1
+}
+
+$raw = [System.IO.File]::ReadAllText($PayloadFile, [System.Text.Encoding]::UTF8)
 $payload = $raw | ConvertFrom-Json
 
 $mode    = $payload.mode
@@ -57,11 +64,10 @@ $input
 "@
 }
 
-# Call Gemini CLI — pipe prompt via stdin
-# Adjust the command if your gemini CLI uses different flags
+# Call Gemini CLI — --prompt 플래그가 stdin pipe보다 안정적
 try {
-  $prompt | gemini
+  gemini --prompt $prompt
 } catch {
-  Write-Error "gemini CLI 호출 실패: $_"
-  exit 1
+  # fallback: stdin pipe
+  $prompt | gemini
 }

@@ -38,6 +38,9 @@ interface AppStore {
   pendingGeminiInput: string | null
   setPendingGeminiInput: (text: string | null) => void
 
+  claudeRestartSignal: number   // 값이 바뀔 때마다 ClaudePanel이 재시작
+  restartClaude: () => void
+
   addGeminiEntry: (entry: Omit<GeminiEntry, 'id' | 'timestamp'>) => string
   appendGeminiChunk: (id: string, chunk: string) => void
   finishGeminiEntry: (id: string) => void
@@ -54,6 +57,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
   geminiEntries: [],
   activeGeminiId: null,
   pendingGeminiInput: null,
+  claudeRestartSignal: 0,
+  restartClaude: () => set(s => ({ claudeRestartSignal: s.claudeRestartSignal + 1 })),
   consoleEntries: [],
 
   setProject: (path) => {

@@ -15,6 +15,7 @@ export default function ClaudePanel() {
   const { project, setClaudeRunning, log } = useAppStore()
   const claudeRunning = useAppStore(s => s.claudeRunning)
   const autoSnippet = useAppStore(s => s.autoSnippet)
+  const claudeRestartSignal = useAppStore(s => s.claudeRestartSignal)
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; selection: string } | null>(null)
   const autoSnippetRef = useRef(autoSnippet)
   autoSnippetRef.current = autoSnippet  // 클로저 갱신 없이 최신값 참조
@@ -127,7 +128,7 @@ export default function ClaudePanel() {
       observer.disconnect()
       term.dispose()
     }
-  }, [project?.path])
+  }, [project?.path, claudeRestartSignal])
 
   // 스니펫을 Claude PTY에 직접 주입
   const handleSnippetSend = (formatted: string) => {

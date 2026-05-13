@@ -343,12 +343,17 @@ ipcMain.handle('gemini:invoke', async (_, { mode, input, context }: {
       ? join(app.getAppPath(), 'scripts', 'ask-gemini.ps1')
       : join(process.resourcesPath, 'scripts', 'ask-gemini.ps1')
 
+    // stdin JSON 방식은 큰 입력(git diff 등)에서 ConvertFrom-Json 실패 → 임시 파일 경유
+    const tmpPath = join(app.getPath('temp'), `kuro-gemini-${Date.now()}.json`)
+    const payload = JSON.stringify({ mode, input, context: context ?? '' })
+    writeFileSync(tmpPath, payload, 'utf-8')
+
     const child = spawnChild('powershell.exe', [
       '-ExecutionPolicy', 'Bypass',
       '-File', scriptPath,
-    ], { stdio: ['pipe', 'pipe', 'pipe'] })
+      '-PayloadFile', tmpPath,
+    ], { stdio: ['ignore', 'pipe', 'pipe'] })
 
-    const payload = JSON.stringify({ mode, input, context: context ?? '' })
     let stdout = ''
     let stderr = ''
 
@@ -358,11 +363,15 @@ ipcMain.handle('gemini:invoke', async (_, { mode, input, context }: {
       mainWindow?.webContents.send('gemini:stream', { chunk: text })
     })
     child.stderr?.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
-    child.stdin?.write(payload)
-    child.stdin?.end()
 
-    child.on('close', code => resolve({ success: code === 0, output: stdout, error: stderr }))
-    child.on('error', err => resolve({ success: false, output: '', error: err.message }))
+    child.on('close', code => {
+      try { require('fs').unlinkSync(tmpPath) } catch {}
+      resolve({ success: code === 0, output: stdout, error: stderr })
+    })
+    child.on('error', err => {
+      try { require('fs').unlinkSync(tmpPath) } catch {}
+      resolve({ success: false, output: '', error: err.message })
+    })
   })
 })
 

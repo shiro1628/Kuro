@@ -8,7 +8,7 @@
 |------|-----------|-----------|
 | Node.js | 18+ | `node --version` |
 | Claude Code CLI | 최신 | `claude --version` |
-| Gemini CLI | 최신 | `gemini --version` |
+| Antigravity CLI (agy) | 최신 | `agy --version` |
 
 ### Claude Code 설치
 
@@ -17,12 +17,9 @@ npm install -g @anthropic-ai/claude-code
 claude login   # Anthropic 계정으로 인증
 ```
 
-### Gemini CLI 설치
+### Antigravity CLI (agy) 설치
 
-```powershell
-npm install -g @google/gemini-cli
-gemini login   # Google 계정으로 인증
-```
+Antigravity CLI는 별도 설치 방법을 따른다. `agy --help`로 설치 여부를 확인한다.
 
 ---
 
@@ -92,7 +89,7 @@ npm run dev
 
 - **자동 래핑**: 툴바 `스니펫` 토글이 켜진 상태에서 코드처럼 생긴 텍스트를 Ctrl+V하면 `<snippet>` 자동 감싸기
 
-### Gemini 패널 (우상단)
+### Antigravity 패널 (우상단)
 - **Review 모드**: 코드/변경사항 붙여넣기 → SHIP / NEEDS-FIX / DISCUSS 평결
 - **Research 모드**: 기술 질문 → 팩트 답변 + 출처
 - Enter 또는 전송 버튼으로 요청
@@ -104,7 +101,7 @@ npm run dev
 - 인터랙티브 터미널이라 직접 명령어 입력 가능
 
 ### Console 패널 (하단)
-- 앱 내부 이벤트 로그 (MCP 주입, 에러 수신, Gemini 요청 등)
+- 앱 내부 이벤트 로그 (MCP 주입, 에러 수신, Antigravity 요청 등)
 - `clear` 버튼으로 초기화
 
 ---
@@ -156,25 +153,24 @@ Extensions 패널 (Ctrl+Shift+X)
 
 ---
 
-## 8. Gemini CLI 동작 확인
+## 8. Antigravity CLI (agy) 동작 확인
 
-Gemini 패널이 응답하지 않으면 스크립트 직접 테스트:
+Antigravity 패널이 응답하지 않으면 스크립트 직접 테스트:
 
 ```powershell
 # 테스트
-echo '{"mode":"research","input":"Node.js 최신 LTS 버전은?","context":""}' | powershell -File C:\Dev\DevAgent\Kuro\scripts\ask-gemini.ps1
+echo '{"mode":"research","input":"Node.js 최신 LTS 버전은?","context":""}' | powershell -File C:\Dev\DevAgent\Kuro\scripts\ask-agy.ps1
 ```
 
-응답이 없으면 `scripts/ask-gemini.ps1` 마지막 줄의 `gemini` 호출 방식 확인:
+응답이 없으면 `scripts/ask-agy.ps1` 마지막 줄의 `agy` 호출 방식 확인:
 
 ```powershell
-# gemini CLI 플래그 확인
-gemini --help
+# agy CLI 플래그 확인
+agy --help
 
 # 일반적인 변형들
-$prompt | gemini
-$prompt | gemini -p -
-gemini --model gemini-2.0-flash-exp -p $prompt
+agy -p $prompt
+$prompt | agy
 ```
 
 ---

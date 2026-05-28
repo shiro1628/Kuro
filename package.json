@@ -7,7 +7,7 @@
     "gen-icon": "node scripts/gen-icon.js",
     "dev": "node scripts/gen-icon.js && electron-vite dev",
     "build": "node scripts/gen-icon.js && electron-vite build",
-    "package": "node scripts/gen-icon.js && electron-vite build && electron-builder --win",
+    "package": "taskkill /F /IM Kuro.exe /T 2>nul & node scripts/gen-icon.js && electron-vite build && electron-builder --win --publish=never",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
@@ -15,6 +15,7 @@
     "@xterm/addon-web-links": "^0.11.0",
     "@xterm/xterm": "^5.5.0",
     "node-pty": "^1.0.0",
+    "react-markdown": "^10.1.0",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
@@ -38,7 +39,7 @@
     "appId": "kr.findthegap.kuro",
     "productName": "Kuro",
     "directories": {
-      "output": "dist"
+      "output": "../kuro-dist"
     },
     "icon": "resources/icon.ico",
     "win": {

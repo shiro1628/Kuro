@@ -1,3 +1,6 @@
+# Antigravity CLI session files
+.antigravitycli/
+
 # Dependencies
 node_modules/
 cursor-extension/node_modules/

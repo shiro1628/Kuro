@@ -13,7 +13,7 @@ interface Props {
 
 export default function TermContextMenu({ x, y, term, ptyId, selection, onClose }: Props) {
   const menuRef = useRef<HTMLDivElement>(null)
-  const setPendingGeminiInput = useAppStore(s => s.setPendingGeminiInput)
+  const setPendingAgyInput = useAppStore(s => s.setPendingAgyInput)
 
   // Close on outside click or Escape
   useEffect(() => {
@@ -68,9 +68,9 @@ export default function TermContextMenu({ x, y, term, ptyId, selection, onClose 
     onClose()
   }
 
-  const sendToGemini = () => {
+  const sendToAgy = () => {
     if (!selection) return
-    setPendingGeminiInput(selection)
+    setPendingAgyInput(selection)
     onClose()
   }
 
@@ -88,8 +88,8 @@ export default function TermContextMenu({ x, y, term, ptyId, selection, onClose 
       <div className="border-t border-surface-border my-1" />
       <Item label="Claude로 전송" onClick={sendToClaude} disabled={!hasSel}
         accent="claude" />
-      <Item label="Gemini로 전송" onClick={sendToGemini} disabled={!hasSel}
-        accent="gemini" />
+      <Item label="Antigravity로 전송" onClick={sendToAgy} disabled={!hasSel}
+        accent="agy" />
       <div className="border-t border-surface-border my-1" />
       <Item label="전체 선택" shortcut="Ctrl+A" onClick={selectAll} />
       <Item label="지우기" onClick={clear} />
@@ -100,11 +100,11 @@ export default function TermContextMenu({ x, y, term, ptyId, selection, onClose 
 function Item({
   label, shortcut, onClick, disabled, accent,
 }: {
-  label: string; shortcut?: string; onClick: () => void; disabled?: boolean; accent?: 'claude' | 'gemini'
+  label: string; shortcut?: string; onClick: () => void; disabled?: boolean; accent?: 'claude' | 'agy'
 }) {
   const activeColor = accent === 'claude'
     ? 'text-accent hover:bg-accent/10'
-    : accent === 'gemini'
+    : accent === 'agy'
     ? 'text-gem hover:bg-gem/10'
     : 'text-gray-300 hover:bg-surface-3 hover:text-white'
 

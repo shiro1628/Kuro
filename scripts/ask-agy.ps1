@@ -1,4 +1,4 @@
-# Kuro - Gemini CLI wrapper
+# Kuro - Antigravity CLI (agy) wrapper
 # Reads JSON payload from -PayloadFile (temp file) to avoid stdin encoding issues with large input
 param(
   [string]$PayloadFile
@@ -22,7 +22,7 @@ $context = if ($context) { $context -replace '</', '<_' } else { '' }
 
 if ($mode -eq 'review') {
   $prompt = @"
-You are a precise code reviewer. Analyze the following and respond in this exact format:
+You are a precise code reviewer. Respond in Korean using formal/polite speech (존댓말). Analyze the following and respond in this exact format:
 
 ## Verdict
 [One of: SHIP | NEEDS-FIX | DISCUSS]
@@ -49,7 +49,7 @@ $input
   } else { '' }
 
   $prompt = @"
-You are a technical researcher. Answer the following question with precision.
+You are a technical researcher. Respond in Korean using formal/polite speech (존댓말). Answer the following question with precision.
 
 Rules:
 - Lead with the direct answer in the first sentence
@@ -64,10 +64,11 @@ $input
 "@
 }
 
-# Call Gemini CLI — --prompt 플래그가 stdin pipe보다 안정적
+# Antigravity CLI (agy) 호출
+# -p / --prompt flag, stdin pipe fallback
 try {
-  gemini --prompt $prompt
+  agy -p $prompt
 } catch {
   # fallback: stdin pipe
-  $prompt | gemini
+  $prompt | agy
 }

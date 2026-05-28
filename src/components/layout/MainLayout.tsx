@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import Toolbar from '../toolbar/Toolbar'
 import ClaudePanel from '../panels/ClaudePanel'
-import GeminiPanel from '../panels/GeminiPanel'
+import AgyPanel from '../panels/AgyPanel'
 import DevServerPanel from '../panels/DevServerPanel'
 import ConsolePanel from '../panels/ConsolePanel'
 
@@ -72,9 +72,9 @@ export default function MainLayout() {
 
           {/* Right column */}
           <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Top-right: Gemini */}
+            {/* Top-right: Antigravity */}
             <div className="panel overflow-hidden" style={{ height: rightRowSplit + '%' }}>
-              <GeminiPanel />
+              <AgyPanel />
             </div>
 
             {/* Horizontal resize handle */}

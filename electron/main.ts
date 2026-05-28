@@ -332,45 +332,47 @@ ipcMain.handle('devserver:detect', async (_, { projectPath }: { projectPath: str
   }
 })
 
-// ─── Gemini invoke ───────────────────────────────────────────────────────────
+// ─── Antigravity CLI (agy) invoke ────────────────────────────────────────────
 
-ipcMain.handle('gemini:invoke', async (_, { mode, input, context }: {
+ipcMain.handle('agy:invoke', async (_, { mode, input, context }: {
   mode: 'review' | 'research'; input: string; context?: string
 }) => {
   return new Promise<{ success: boolean; output: string; error: string }>((resolve) => {
     const isDev = !app.isPackaged
     const scriptPath = isDev
-      ? join(app.getAppPath(), 'scripts', 'ask-gemini.ps1')
-      : join(process.resourcesPath, 'scripts', 'ask-gemini.ps1')
+      ? join(app.getAppPath(), 'scripts', 'ask-agy.ps1')
+      : join(process.resourcesPath, 'scripts', 'ask-agy.ps1')
 
     // stdin JSON 방식은 큰 입력(git diff 등)에서 ConvertFrom-Json 실패 → 임시 파일 경유
-    const tmpPath = join(app.getPath('temp'), `kuro-gemini-${Date.now()}.json`)
+    const tmpPath = join(app.getPath('temp'), `kuro-agy-${Date.now()}.json`)
     const payload = JSON.stringify({ mode, input, context: context ?? '' })
     writeFileSync(tmpPath, payload, 'utf-8')
 
-    const child = spawnChild('powershell.exe', [
-      '-ExecutionPolicy', 'Bypass',
+    // agy writes via Windows console API (not stdout pipe) → need PTY
+    const stripAnsi = (s: string) => s
+      .replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '')
+      .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+
+    let output = ''
+
+    const ptyProc = nodePty.spawn('powershell.exe', [
+      '-NoProfile', '-ExecutionPolicy', 'Bypass',
       '-File', scriptPath,
       '-PayloadFile', tmpPath,
-    ], { stdio: ['ignore', 'pipe', 'pipe'] })
+    ], { name: 'xterm-256color', cols: 220, rows: 50, cwd: homedir() })
 
-    let stdout = ''
-    let stderr = ''
-
-    child.stdout?.on('data', (chunk: Buffer) => {
-      const text = chunk.toString()
-      stdout += text
-      mainWindow?.webContents.send('gemini:stream', { chunk: text })
+    ptyProc.onData(data => {
+      const text = stripAnsi(data)
+      if (!text.trim()) return
+      output += text
+      mainWindow?.webContents.send('agy:stream', { chunk: text })
     })
-    child.stderr?.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
 
-    child.on('close', code => {
+    ptyProc.onExit(({ exitCode }) => {
       try { require('fs').unlinkSync(tmpPath) } catch {}
-      resolve({ success: code === 0, output: stdout, error: stderr })
-    })
-    child.on('error', err => {
-      try { require('fs').unlinkSync(tmpPath) } catch {}
-      resolve({ success: false, output: '', error: err.message })
+      resolve({ success: exitCode === 0, output, error: '' })
     })
   })
 })

@@ -63,7 +63,7 @@ export default function ProjectLoadScreen({ onOpen }: Props) {
           </h1>
           <p className="text-xs mt-2 tracking-widest uppercase"
             style={{ color: 'rgba(240,165,0,0.5)', letterSpacing: '0.2em' }}>
-            黒猫 · Claude + Gemini
+            黒猫 · Claude + Antigravity
           </p>
         </div>
 

@@ -13,8 +13,8 @@ declare global {
       mcpInject: (projectPath: string) => Promise<{ success: boolean; error?: string }>
       gitDiff: (projectPath: string) => Promise<{ diff: string; empty: boolean }>
       devserverDetect: (projectPath: string) => Promise<{ name: string; script: string } | null>
-      geminiInvoke: (opts: { mode: 'review' | 'research'; input: string; context?: string }) => Promise<{ success: boolean; output: string; error: string }>
-      onGeminiStream: (cb: (chunk: string) => void) => () => void
+      agyInvoke: (opts: { mode: 'review' | 'research'; input: string; context?: string }) => Promise<{ success: boolean; output: string; error: string }>
+      onAgyStream: (cb: (chunk: string) => void) => () => void
       onExternalInject: (cb: (payload: { code: string; error?: string; file?: string; lines?: string }) => void) => () => void
       getServerPort: () => Promise<number>
       onServerReady: (cb: (port: number) => void) => () => void

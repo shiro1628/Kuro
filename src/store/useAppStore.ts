@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export interface GeminiEntry {
+export interface AgyEntry {
   id: string
   mode: 'review' | 'research'
   input: string
@@ -23,8 +23,8 @@ interface AppStore {
   devServerRunning: boolean
   autoSnippet: boolean       // 코드 붙여넣기 자동 snippet 래핑
 
-  geminiEntries: GeminiEntry[]
-  activeGeminiId: string | null
+  agyEntries: AgyEntry[]
+  activeAgyId: string | null
 
   consoleEntries: ConsoleEntry[]
 
@@ -35,15 +35,15 @@ interface AppStore {
   setDevServerRunning: (v: boolean) => void
   toggleAutoSnippet: () => void
 
-  pendingGeminiInput: string | null
-  setPendingGeminiInput: (text: string | null) => void
+  pendingAgyInput: string | null
+  setPendingAgyInput: (text: string | null) => void
 
   claudeRestartSignal: number   // 값이 바뀔 때마다 ClaudePanel이 재시작
   restartClaude: () => void
 
-  addGeminiEntry: (entry: Omit<GeminiEntry, 'id' | 'timestamp'>) => string
-  appendGeminiChunk: (id: string, chunk: string) => void
-  finishGeminiEntry: (id: string) => void
+  addAgyEntry: (entry: Omit<AgyEntry, 'id' | 'timestamp'>) => string
+  appendAgyChunk: (id: string, chunk: string) => void
+  finishAgyEntry: (id: string) => void
 
   log: (type: ConsoleEntry['type'], message: string) => void
 }
@@ -54,9 +54,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
   claudeRunning: false,
   devServerRunning: false,
   autoSnippet: true,
-  geminiEntries: [],
-  activeGeminiId: null,
-  pendingGeminiInput: null,
+  agyEntries: [],
+  activeAgyId: null,
+  pendingAgyInput: null,
   claudeRestartSignal: 0,
   restartClaude: () => set(s => ({ claudeRestartSignal: s.claudeRestartSignal + 1 })),
   consoleEntries: [],
@@ -71,29 +71,29 @@ export const useAppStore = create<AppStore>((set, get) => ({
   setDevServerRunning: (v) => set({ devServerRunning: v }),
   toggleAutoSnippet: () => set(s => ({ autoSnippet: !s.autoSnippet })),
 
-  setPendingGeminiInput: (text) => set({ pendingGeminiInput: text }),
+  setPendingAgyInput: (text) => set({ pendingAgyInput: text }),
 
-  addGeminiEntry: (entry) => {
+  addAgyEntry: (entry) => {
     const id = crypto.randomUUID()
     set(s => ({
-      geminiEntries: [...s.geminiEntries, { ...entry, id, timestamp: new Date() }],
-      activeGeminiId: id,
+      agyEntries: [...s.agyEntries, { ...entry, id, timestamp: new Date() }],
+      activeAgyId: id,
     }))
     return id
   },
-  appendGeminiChunk: (id, chunk) => {
+  appendAgyChunk: (id, chunk) => {
     set(s => ({
-      geminiEntries: s.geminiEntries.map(e =>
+      agyEntries: s.agyEntries.map(e =>
         e.id === id ? { ...e, output: e.output + chunk } : e
       ),
     }))
   },
-  finishGeminiEntry: (id) => {
+  finishAgyEntry: (id) => {
     set(s => ({
-      geminiEntries: s.geminiEntries.map(e =>
+      agyEntries: s.agyEntries.map(e =>
         e.id === id ? { ...e, loading: false } : e
       ),
-      activeGeminiId: null,
+      activeAgyId: null,
     }))
   },
 

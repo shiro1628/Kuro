@@ -45,13 +45,13 @@ contextBridge.exposeInMainWorld('kuro', {
   devserverDetect: (projectPath: string): Promise<{ name: string; script: string } | null> =>
     ipcRenderer.invoke('devserver:detect', { projectPath }),
 
-  // Gemini
-  geminiInvoke: (opts: { mode: 'review' | 'research'; input: string; context?: string }) =>
-    ipcRenderer.invoke('gemini:invoke', opts),
-  onGeminiStream: (cb: (chunk: string) => void) => {
+  // Antigravity CLI (agy)
+  agyInvoke: (opts: { mode: 'review' | 'research'; input: string; context?: string }) =>
+    ipcRenderer.invoke('agy:invoke', opts),
+  onAgyStream: (cb: (chunk: string) => void) => {
     const fn = (_: Electron.IpcRendererEvent, { chunk }: { chunk: string }) => cb(chunk)
-    ipcRenderer.on('gemini:stream', fn)
-    return () => ipcRenderer.off('gemini:stream', fn)
+    ipcRenderer.on('agy:stream', fn)
+    return () => ipcRenderer.off('agy:stream', fn)
   },
 
   // External inject (from Cursor extension via HTTP server)

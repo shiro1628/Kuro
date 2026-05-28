@@ -5,23 +5,23 @@
 | Agent | 역할 | 호출 방법 |
 |---|---|---|
 | **Claude (너)** | 메인 코더 — 설계, 구현, 리팩터링 | 직접 수행 |
-| **Gemini** | 리뷰어 + 리서처 | UI의 Gemini 패널에서 요청 |
+| **Antigravity** | 리뷰어 + 리서처 | UI의 Antigravity 패널에서 요청 |
 
-Claude는 코드를 직접 작성한다. Gemini는 리뷰와 팩트 조사만 담당한다.
+Claude는 코드를 직접 작성한다. Antigravity는 리뷰와 팩트 조사만 담당한다.
 
 ---
 
-## Gemini 호출 기준
+## Antigravity 호출 기준
 
 ### Review 요청 (코드 리뷰)
-다음 상황에서 Gemini Review를 권장한다:
+다음 상황에서 Antigravity Review를 권장한다:
 - PR 머지 전 변경사항 검토
 - 새 기능/모듈 완성 후 품질 검토
 - 보안에 민감한 코드 (인증, 권한, 입력 처리)
 - 사용자가 명시적으로 리뷰 요청
 
 ### Research 요청 (팩트 조사)
-다음 상황에서 Gemini Research를 권장한다:
+다음 상황에서 Antigravity Research를 권장한다:
 - 라이브러리 최신 버전 / Breaking change 확인
 - API 사양, 옵션 이름, 기본값 확인
 - 특정 에러의 원인 및 해결법 조사
@@ -59,7 +59,7 @@ Read("src/auth/login.ts", offset=40, limit=20)
 
 ## 코딩 규칙
 
-1. **추측 금지** — 불확실한 사실은 Gemini Research로 확인 후 사용
+1. **추측 금지** — 불확실한 사실은 Antigravity Research로 확인 후 사용
 2. **단계적 구현** — 큰 변경은 논리적 단위로 나눠서 진행
 3. **테스트 먼저** — 변경 후 영향 범위 확인
 4. **보안 우선** — 입력 검증, 인증 처리, 비밀값 노출 방지

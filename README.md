@@ -109,6 +109,8 @@ npx @vscode/vsce package --no-dependencies
 
 Kuro 앱이 실행 중이어야 동작한다 (포트 7890).
 
+`/inject` 엔드포인트는 세션 토큰으로 보호된다. Kuro 앱이 시작할 때 `~/.kuro/token`에 랜덤 토큰을 기록하고, 확장이 이 파일을 읽어 `X-Kuro-Token` 헤더로 전송한다. 토큰이 없거나 불일치하면 403으로 거부되므로, 브라우저 웹페이지 등 외부에서 임의 프롬프트를 주입할 수 없다.
+
 ---
 
 ## 동작 흐름
@@ -127,21 +129,25 @@ dev → start → serve → preview 순으로 탐지
 감지된 명령어는 Dev Server 패널에 자동 입력된다.
 
 **Playwright MCP 자동 주입**  
-`.claude/settings.json`에 Playwright MCP 서버를 머지한다.  
+사용자 전역 설정인 `~/.claude.json`의 top-level `mcpServers`에 Playwright MCP 서버를 머지한다.  
 기존 설정은 덮어쓰지 않고 `mcpServers.playwright` 키만 추가/갱신한다.
 
+> 주의: 전역 설정이므로 Kuro 밖에서 실행하는 Claude Code 세션에도 적용된다.
+
 ```json
-// .claude/settings.json (자동 생성/갱신)
+// ~/.claude.json (자동 생성/갱신)
 {
   "mcpServers": {
     "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest", "--headless"],
-      "type": "stdio"
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@playwright/mcp@latest"],
+      "disabled": false
     }
   }
 }
 ```
+
+공유 브라우저 실행 시에는 `--cdp-endpoint http://localhost:9222`가 args에 추가된다.
 
 ### 2. Claude Code 패널
 
@@ -248,7 +254,7 @@ Claude가 코드를 수정한 후 **변경사항 리뷰** 클릭 → `git diff H
 앱 내부 이벤트를 타임스탬프와 함께 기록한다.
 
 ```
-13:42:01  OK    Playwright MCP injected → C:\project\.claude\settings.json
+13:42:01  OK    Playwright MCP injected → ~/.claude.json
 13:42:02  OK    Claude Code terminal started in C:\project
 13:42:03  OK    Dev server terminal started
 13:45:10  INFO  Antigravity review 요청: 로그인 로직 변경사항…

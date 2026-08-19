@@ -1,11 +1,24 @@
 import * as vscode from 'vscode'
 import * as http from 'http'
+import * as fs from 'fs'
+import * as os from 'os'
+import * as path from 'path'
 
 function getConfig() {
   const cfg = vscode.workspace.getConfiguration('kuro')
   return {
     port: cfg.get<number>('port', 7890),
     contextLines: cfg.get<number>('contextLines', 20),
+  }
+}
+
+// Kuro 앱이 시작 시 ~/.kuro/token에 기록하는 세션 토큰.
+// 브라우저 웹페이지는 이 파일을 읽을 수 없으므로 /inject 무단 호출이 차단된다.
+function readKuroToken(): string | null {
+  try {
+    return fs.readFileSync(path.join(os.homedir(), '.kuro', 'token'), 'utf-8').trim()
+  } catch {
+    return null
   }
 }
 
@@ -17,6 +30,10 @@ function postToKuro(payload: {
 }): Promise<void> {
   return new Promise((resolve, reject) => {
     const { port } = getConfig()
+    const token = readKuroToken()
+    if (!token) {
+      return reject(new Error('토큰 파일(~/.kuro/token)을 읽을 수 없습니다. Kuro 앱을 다시 시작하세요.'))
+    }
     const body = JSON.stringify(payload)
 
     const req = http.request(
@@ -28,10 +45,12 @@ function postToKuro(payload: {
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(body),
+          'X-Kuro-Token': token,
         },
       },
       res => {
         if (res.statusCode === 200) resolve()
+        else if (res.statusCode === 403) reject(new Error('토큰 불일치 — Kuro 앱을 다시 시작한 뒤 재시도하세요.'))
         else reject(new Error(`Kuro 서버 응답: ${res.statusCode}`))
       }
     )

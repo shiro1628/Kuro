@@ -2,8 +2,9 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { homedir } from 'os'
 import { spawn as spawnChild, type ChildProcess } from 'child_process'
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'fs'
 import { createServer, type Server } from 'http'
+import { randomBytes, timingSafeEqual } from 'crypto'
 import * as nodePty from 'node-pty'
 
 const KURO_PORT = 7890
@@ -11,6 +12,23 @@ const CDP_PORT = 9222
 let httpServer: Server | null = null
 let browserProc: ChildProcess | null = null
 let browserCdpEndpoint: string | null = null
+
+// /inject 인증 토큰 — 파일 시스템 접근이 가능한 로컬 프로세스(Cursor 확장)만
+// 읽을 수 있고, 브라우저의 웹페이지는 읽을 수 없다 (drive-by 주입 차단)
+const KURO_TOKEN = randomBytes(32).toString('hex')
+
+function writeTokenFile() {
+  const dir = join(homedir(), '.kuro')
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'token'), KURO_TOKEN, { encoding: 'utf-8', mode: 0o600 })
+}
+
+function isValidToken(header: string | string[] | undefined): boolean {
+  if (typeof header !== 'string') return false
+  const a = Buffer.from(header)
+  const b = Buffer.from(KURO_TOKEN)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
 
 // Find Chrome or Edge on Windows
 function findBrowser(): string | null {
@@ -65,9 +83,15 @@ function createWindow() {
 
 // ─── PTY ────────────────────────────────────────────────────────────────────
 
+// 렌더러가 오염돼도 임의 실행 파일을 스폰할 수 없도록 셸만 허용
+const PTY_ALLOWED_COMMANDS = new Set(['powershell.exe', 'pwsh.exe', 'cmd.exe'])
+
 ipcMain.handle('pty:spawn', async (_, { id, cwd, command, args }: {
   id: string; cwd: string; command: string; args?: string[]
 }) => {
+  if (!PTY_ALLOWED_COMMANDS.has(command.toLowerCase())) {
+    return { success: false, error: `허용되지 않은 명령: ${command}` }
+  }
   if (ptys.has(id)) {
     try { ptys.get(id)!.kill() } catch {}
     ptys.delete(id)
@@ -356,12 +380,19 @@ ipcMain.handle('agy:invoke', async (_, { mode, input, context }: {
       .replace(/\r/g, '\n')
 
     let output = ''
+    const cleanup = () => { try { unlinkSync(tmpPath) } catch {} }
 
-    const ptyProc = nodePty.spawn('powershell.exe', [
-      '-NoProfile', '-ExecutionPolicy', 'Bypass',
-      '-File', scriptPath,
-      '-PayloadFile', tmpPath,
-    ], { name: 'xterm-256color', cols: 220, rows: 50, cwd: homedir() })
+    let ptyProc: nodePty.IPty
+    try {
+      ptyProc = nodePty.spawn('powershell.exe', [
+        '-NoProfile', '-ExecutionPolicy', 'Bypass',
+        '-File', scriptPath,
+        '-PayloadFile', tmpPath,
+      ], { name: 'xterm-256color', cols: 220, rows: 50, cwd: homedir() })
+    } catch (err: any) {
+      cleanup()
+      return resolve({ success: false, output: '', error: err.message })
+    }
 
     ptyProc.onData(data => {
       const text = stripAnsi(data)
@@ -371,7 +402,7 @@ ipcMain.handle('agy:invoke', async (_, { mode, input, context }: {
     })
 
     ptyProc.onExit(({ exitCode }) => {
-      try { require('fs').unlinkSync(tmpPath) } catch {}
+      cleanup()
       resolve({ success: exitCode === 0, output, error: '' })
     })
   })
@@ -381,17 +412,15 @@ ipcMain.handle('agy:invoke', async (_, { mode, input, context }: {
 
 function startHttpServer() {
   httpServer = createServer((req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-
-    if (req.method === 'OPTIONS') {
-      res.writeHead(204)
-      res.end()
-      return
-    }
+    // CORS 헤더 없음 — 브라우저 교차 출처 접근은 의도적으로 차단.
+    // 클라이언트(Cursor 확장)는 Node http로 직접 호출하므로 CORS 불필요.
 
     if (req.method === 'POST' && req.url === '/inject') {
+      if (!isValidToken(req.headers['x-kuro-token'])) {
+        res.writeHead(403, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ ok: false, error: 'invalid token' }))
+        return
+      }
       let body = ''
       req.on('data', chunk => { body += chunk.toString() })
       req.on('end', () => {
@@ -440,6 +469,7 @@ ipcMain.handle('server:getPort', () => KURO_PORT)
 
 app.whenReady().then(() => {
   createWindow()
+  writeTokenFile()
   startHttpServer()
 })
 
@@ -449,5 +479,6 @@ app.on('window-all-closed', () => {
     try { pty.kill() } catch {}
   }
   httpServer?.close()
+  try { unlinkSync(join(homedir(), '.kuro', 'token')) } catch {}
   app.quit()
 })

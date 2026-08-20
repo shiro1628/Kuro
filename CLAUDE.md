@@ -73,17 +73,19 @@ Read("src/auth/login.ts", offset=40, limit=20)
 
 ## Playwright MCP 설정
 
-프로젝트 열 때 자동으로 `.claude/settings.json`에 주입됨:
+프로젝트 열 때 자동으로 사용자 전역 `~/.claude.json`의 top-level `mcpServers`에 주입됨 (Kuro 밖 Claude Code 세션에도 적용):
 ```json
 {
   "mcpServers": {
     "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest", "--headless"]
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@playwright/mcp@latest"],
+      "disabled": false
     }
   }
 }
 ```
+공유 브라우저 실행 시 `--cdp-endpoint http://localhost:9222`가 args에 추가됨.
 
 ---
 

@@ -2,6 +2,7 @@
   "name": "kuro",
   "version": "0.1.0",
   "description": "AI-driven dev workspace — Claude coder + Gemini reviewer/researcher",
+  "author": "Shiro",
   "main": "out/main/index.js",
   "scripts": {
     "gen-icon": "node scripts/gen-icon.js",

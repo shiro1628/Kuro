@@ -2,7 +2,7 @@
   "name": "kuro-cursor",
   "displayName": "Kuro",
   "description": "Send errors and code snippets to Kuro (Claude + Gemini workspace)",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "findthegap",
   "repository": { "type": "git", "url": "https://github.com/findthegap/kuro" },
   "license": "MIT",
@@ -21,6 +21,20 @@
         "title": "Kuro: 선택한 코드 전송"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "kuro.sendSnippet",
+          "when": "editorHasSelection",
+          "group": "kuro@1"
+        },
+        {
+          "command": "kuro.fixWithKuro",
+          "when": "editorFocus",
+          "group": "kuro@2"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "kuro.fixWithKuro",

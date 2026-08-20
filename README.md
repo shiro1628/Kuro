@@ -29,7 +29,7 @@ Electron 데스크탑 앱으로 로컬 프로젝트 개발에 집중할 수 있�
 
 ### 우클릭 컨텍스트 메뉴
 ![컨텍스트 메뉴](docs/context-menu.png)
-> 코드 선택 후 우클릭 → `Kuro: 선택한 코드 전송` / `Fix with Kuro`. 선택 영역이 snippet으로 Kuro의 Claude 터미널에 주입된다.
+> 코드 선택 후 우클릭 → `Kuro: 선택한 코드 전송`. 선택 영역이 snippet으로 Kuro의 Claude 터미널에 주입된다. (에러 수정은 전구 메뉴 또는 `Ctrl+Alt+K`의 `Fix with Kuro` 사용)
 
 ---
 
@@ -110,7 +110,6 @@ npx @vscode/vsce package --no-dependencies
 | 에러+코드 전송 | 에러 위치에 커서 두고 `Ctrl+Alt+K` |
 | 선택 코드 전송 | 코드 선택 후 **우클릭 → `Kuro: 선택한 코드 전송`** (또는 커맨드 팔레트) |
 | Quick Fix 메뉴 | 에러 줄 전구(💡) 클릭 → `Fix with Kuro` |
-| 우클릭 메뉴 | 에디터 우클릭 → `Kuro: 선택한 코드 전송` / `Fix with Kuro` |
 
 Kuro 앱이 실행 중이어야 동작한다 (포트 7890).
 
